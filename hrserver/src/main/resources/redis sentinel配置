@@ -1,0 +1,25 @@
+1.主redis
+bind 0.0.0.0
+
+2.从redis
+bind 0.0.0.0
+slaveof 39.108.68.234 7501
+
+3.sentinel
+#关闭自我保护
+protected-mode on
+#指定别名  主节点地址  端口  哨兵个数（有几个哨兵监控到主节点宕机执行转移）
+sentinel monitor mymaster 39.108.68.234 7501 1
+#如果哨兵3s内没有收到主节点的心跳，哨兵就认为主节点宕机了，默认是30秒
+sentinel down-after-milliseconds mymaster 3000
+#选举出新的主节点之后，可以同时连接从节点的个数
+sentinel parallel-syncs mymaster 1
+#如果10秒后,master仍没活过来，则启动failover,默认180s
+sentinel failover-timeout mymaster 10000
+#配置连接redis主节点密码
+sentinel auth-pass mymaster 123456
+注：我们稍后要启动四个redis实例，其中端口为7501的redis设为master，其他三个设为slave 。所以mymaster 后跟的是master的ip和端口，最后一个'2'代表我要启动只要有2个sentinel认为master下线，就认为该master客观下线，启动failover并选举产生新的master。通常最后一个参数不能多于启动的sentinel实例数。建议至少启动三台sentinel实例。
+
+参考文章：
+https://www.cnblogs.com/LiZhiW/p/4851631.html
+http://blog.51cto.com/dengaosky/2091877
