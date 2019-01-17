@@ -3,6 +3,7 @@ package org.sang.controller;
 import org.sang.mq.MQConfig;
 import org.sang.mq.MQSender;
 import org.sang.service.DepartmentService;
+import org.sang.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +22,9 @@ public class TestController {
 
     @Autowired
     private DepartmentService departmentService;
+
+    @Autowired
+    private RedisService redisService;
 
     @RequestMapping("/mq")
     public String mq(){
@@ -68,7 +72,9 @@ public class TestController {
 
     @RequestMapping("/clear")
     public String clear(){
-        departmentService.remove(2L);
+        //departmentService.remove(2L);
+        //redisService.put1();
+        redisService.put2();
         return "success";
     }
 

@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by sang on 2018/1/7.
@@ -80,25 +81,36 @@ public class DepartmentService {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private RedisService redisService;
+
     //@CacheEvict(value = "department")
-    public void remove(Long id) {
+    public String remove(Long id) {
         System.out.println("删除了id为" + id + "key为department的数据缓存");
         //用于手动触发删除缓存
-        String name = StringUtils.null2EmptyWithTrimNew(redisTemplate.opsForValue().get("name"));
+
+        /*String name = StringUtils.null2EmptyWithTrimNew(redisTemplate.opsForValue().get("name"));
         System.out.println("name:" + name);
 
-        redisTemplate.opsForValue().set("name","zcl123");
+        redisTemplate.opsForValue().set("name","zcl12345");
 
-        /*
+        *//*
         redisUtil.set("name","rick123");
 
         String name2 = StringUtils.null2EmptyWithTrimNew(redisUtil.get("name"));
         System.out.println("name2:" + name2);
-        */
+        *//*
 
+        //如果开启了事物此处将不能取到前面最新赋值
         String name3 = StringUtils.null2EmptyWithTrimNew(redisTemplate.opsForValue().get("name"));
 
-        System.out.println("name3:" + name3);
+        System.out.println("name3:" + name3);*/
+        /*
+        int i = (int)(Math.random() * 100);
+        redisTemplate.opsForValue().set("key"+i, "value"+i, 300, TimeUnit.SECONDS);
+        return "success "+"key"+i;
+        */
+        return null;
     }
 
 

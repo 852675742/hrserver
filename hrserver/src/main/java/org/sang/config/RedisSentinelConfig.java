@@ -11,8 +11,12 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 import redis.clients.jedis.JedisPoolConfig;
 
+import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -125,23 +129,13 @@ public class RedisSentinelConfig {
         return jedisConnectionFactory;
     }
     /**
-     * 实例化 RedisTemplate 对象
+     * 实例化 RedisTemplate 对象(带事物)
      *
      * @return
      */
-    @Bean(name="redisTemplate")
+    @Bean(name="redisTransactionTemplate")
     public RedisTemplate<String, Object> functionDomainRedisTemplate(@Qualifier(value="jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        initDomainRedisTemplate(redisTemplate, jedisConnectionFactory);
-        return redisTemplate;
-    }
-    /**
-     * 设置数据存入 redis 的序列化方式,并开启事务
-     *
-     * @param redisTemplate
-     * @param factory
-     */
-    private void initDomainRedisTemplate(RedisTemplate<String, Object> redisTemplate, JedisConnectionFactory factory) {
         //如果不配置Serializer，那么存储的时候缺省使用String，如果用User类型存储，那么会提示错误User can't cast to String！
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
@@ -149,7 +143,26 @@ public class RedisSentinelConfig {
         redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         // 开启事务
         redisTemplate.setEnableTransactionSupport(true);
-        redisTemplate.setConnectionFactory(factory);
+        redisTemplate.setConnectionFactory(jedisConnectionFactory);
+        return redisTemplate;
+    }
+
+    /**
+     * 不带事物
+     * @param jedisConnectionFactory
+     * @return
+     */
+    @Bean(name="redisemplate")
+    public RedisTemplate<String, Object> redisTemplate(@Qualifier(value="jedisConnectionFactory") JedisConnectionFactory jedisConnectionFactory) {
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        // 开启事务
+        redisTemplate.setEnableTransactionSupport(false);
+        redisTemplate.setConnectionFactory(jedisConnectionFactory);
+        return redisTemplate;
     }
 
     /**
@@ -161,10 +174,15 @@ public class RedisSentinelConfig {
      * @throws
      */
     @Bean(name = "redisUtil")
-    public RedisUtil redisUtil(@Qualifier(value="redisTemplate") RedisTemplate<String, Object> redisTemplate) {
+    public RedisUtil redisUtil(@Qualifier(value="redisTemplate") RedisTemplate redisTemplate) {
         RedisUtil redisUtil = new RedisUtil();
         redisUtil.setRedisTemplate(redisTemplate);
         return redisUtil;
+    }
+
+    @Bean
+    public PlatformTransactionManager txManager(DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
     }
 
 }
