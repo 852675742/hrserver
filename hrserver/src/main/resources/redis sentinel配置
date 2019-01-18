@@ -23,3 +23,10 @@ sentinel auth-pass mymaster 123456
 参考文章：
 https://www.cnblogs.com/LiZhiW/p/4851631.html
 http://blog.51cto.com/dengaosky/2091877
+
+
+4.redis集群搭建
+https://my.oschina.net/lyyjason/blog/1842002?from=timeline
+https://my.oschina.net/lyyjason/blog/1842165
+
+codis分布式redis方案

@@ -91,7 +91,7 @@
     </logger>
 
 
-    <logger name="com.sang"  additivity="false">
+    <logger name="org.sang"  additivity="false">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="DEBUG" />
         <appender-ref ref="INFO" />

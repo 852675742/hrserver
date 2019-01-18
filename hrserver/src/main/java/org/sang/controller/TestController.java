@@ -1,5 +1,8 @@
 package org.sang.controller;
 
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.sang.config.RedissLockUtil;
 import org.sang.mq.MQConfig;
 import org.sang.mq.MQSender;
 import org.sang.service.DepartmentService;
@@ -8,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Created by Rick on 2018/10/18.
  *
@@ -15,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping(value="test")
+@Slf4j
 public class TestController {
 
     @Autowired
@@ -74,8 +80,45 @@ public class TestController {
     public String clear(){
         //departmentService.remove(2L);
         //redisService.put1();
-        redisService.put2();
+        //redisService.put2();
+        redisService.put3();
         return "success";
     }
+
+    @RequestMapping(value = "/test")
+    public void test(String recordId) {
+        boolean bs =  RedissLockUtil.tryLock(recordId, TimeUnit.SECONDS, 5, 20);//等待5秒，最长持有120s
+        try {
+            if (bs) {
+                // 业务代码
+                log.debug("获取锁，进入业务代码: " + recordId + "线程:" + Thread.currentThread().getName());
+                RedissLockUtil.unlock(recordId);
+                log.debug("释放锁:" +recordId + "线程:" +  Thread.currentThread().getName());
+            } else {
+                log.debug("没有获取到锁: " + recordId + "线程:" + Thread.currentThread().getName());
+                Thread.sleep(300);
+            }
+        } catch (Exception e) {
+            log.error("", e);
+            RedissLockUtil.unlock(recordId);
+        }
+    }
+
+    @RequestMapping(value = "/test2")
+    public void test2(String recordId) {
+        RLock lock = RedissLockUtil.getLock(recordId);
+        try {
+            lock.lock();
+            // 业务代码
+            log.debug("获取锁，进入业务代码: " + recordId + "线程:" + Thread.currentThread().getName());
+            //Thread.sleep(20000);
+            RedissLockUtil.unlock(lock);
+            log.debug("释放锁:" +recordId + "线程:" +  Thread.currentThread().getName());
+        } catch (Exception e) {
+            log.error("", e);
+            RedissLockUtil.unlock(lock);
+        }
+    }
+
 
 }
