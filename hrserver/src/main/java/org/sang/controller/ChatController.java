@@ -39,7 +39,7 @@ public class ChatController {
         return new RespBean("error", "发送失败!");
     }
 
-    @RequestMapping("/sysmsgs")
+    @RequestMapping(name="/sysmsgs")
     public List<SysMsg> getSysMsg(@RequestParam(value = "page", defaultValue = "1") Integer page, @RequestParam(value = "size", defaultValue = "10") Integer size) {
         return sysMsgService.getSysMsgByPage(page, size);
     }
