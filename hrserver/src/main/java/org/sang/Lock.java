@@ -98,6 +98,7 @@ public class Lock {
         });
         curator.delete().forPath("/example/pathCache/test01");
         curator.delete().forPath("/example/pathCache/test02");
+        
         pathChildrenCache.close();
     }
       
