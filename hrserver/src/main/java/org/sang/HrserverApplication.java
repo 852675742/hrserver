@@ -1,9 +1,11 @@
 package org.sang;
 
 import org.mybatis.spring.annotation.MapperScan;
+import org.sang.config.ZkComsumer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -17,7 +19,12 @@ import javax.sql.DataSource;
 @EnableTransactionManagement(proxyTargetClass = true)
 public class HrserverApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(HrserverApplication.class, args);
+	public static void main(String[] args) throws Exception {
+		ApplicationContext applicationContext = SpringApplication.run(HrserverApplication.class, args);
+
+		//以下代码为测试
+		ZkComsumer zkComsumer = applicationContext.getBean(ZkComsumer.class);
+		String serverInfo = zkComsumer.getServerinfo("hrv");//获取服务数据
+		System.out.println("本次获取到服务:" + serverInfo);
 	}
 }

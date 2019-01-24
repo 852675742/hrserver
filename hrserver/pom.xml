@@ -73,6 +73,12 @@
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-cache</artifactId>
 		</dependency>
 		<dependency>
@@ -143,13 +149,11 @@
 			<artifactId>zkclient</artifactId>
 			<version>0.1</version>
 		</dependency>
-		<!--
 		<dependency>
-			<groupId>org.apache.zookeeper</groupId>
-			<artifactId>zookeeper</artifactId>
-			<version>${zookeeper.version}</version>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>1.2.33</version>
 		</dependency>
-		-->
 
 	</dependencies>
 	<build>

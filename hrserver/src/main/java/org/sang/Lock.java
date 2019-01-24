@@ -98,13 +98,13 @@ public class Lock {
         });
         curator.delete().forPath("/example/pathCache/test01");
         curator.delete().forPath("/example/pathCache/test02");
-        
+
         pathChildrenCache.close();
     }
       
     public static void main(String[] args) throws Exception {  
         //Lock.count(1, 10);
-        //curator.create().forPath("/test","init".getBytes());
+        curator.create().withMode(CreateMode.EPHEMERAL_SEQUENTIAL).forPath("/test9","init".getBytes());
         //curator.delete().guaranteed().forPath("/test");
         /*
         Stat stat = new Stat();
@@ -124,7 +124,7 @@ public class Lock {
                 .and()
                 .commit();
                 */
-        pathCache();
+        //pathCache();
         curator.close();
         /*
         Lock.count(10, 500);
