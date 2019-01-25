@@ -2,11 +2,11 @@ package org.sang.config;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import org.I0Itec.zkclient.ZkClient;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
+import org.sang.zk.ConsistentHash;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -20,12 +20,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ZkComsumer implements Watcher {
 
     //本地缓存服务列表
-    private static Map<String, List<String>> servermap;
+    public static Map<String, List<String>> servermap;
 
     @Autowired
     private CuratorFramework curatorClient;
 
     private final String rootPath = "/services";
+
+    private ConsistentHash consistentHash;
 
     /**
      * 获取服务节点数据
@@ -43,6 +45,7 @@ public class ZkComsumer implements Watcher {
         }
         List<String> serverList = servermap.get(serverName);
         if (serverList != null && serverList.size() > 0) {//直接从缓存中取
+            consistentHash = new ConsistentHash(serverList.size(),serverList);
             return serverList;
         }
 
@@ -63,6 +66,7 @@ public class ZkComsumer implements Watcher {
                 list.add(nodeData);
             }
         });
+        consistentHash = new ConsistentHash(list.size(),list);
         servermap.put(serverName, list);
         return list;
     }
@@ -80,8 +84,9 @@ public class ZkComsumer implements Watcher {
             if (CollectionUtils.isEmpty(nodeList)) {
                 return null;
             }
-            //这里使用得随机负载策略，如需需要自己可以实现其他得负载策略
-            String snode = nodeList.get((int) (Math.random() * nodeList.size()));
+
+            //String snode = nodeList.get((int) (Math.random() * nodeList.size()));//这里使用得随机负载策略，如需需要自己可以实现其他得负载策略
+            String snode = (String)consistentHash.get(nodeList.get(0));//从一致性Hash环的第一个服务开始查找
             JSONObject nodeJson = (JSONObject)JSONObject.parse(snode);
             List<String> children = curatorClient.getChildren().forPath(rootPath + "/" + serverName);
             //随机负载后,将随机取得节点后的状态更新为run
@@ -101,6 +106,7 @@ public class ZkComsumer implements Watcher {
     @Override
     public void process(WatchedEvent watchedEvent) {
         //如果服务节点数据发生变化则清空本地缓存
+        log.debug("进入zk监控");
         if (watchedEvent.getType().equals(Event.EventType.NodeChildrenChanged)) {
             log.info("服务节点数据发生改变，清空缓存");
             servermap = null;

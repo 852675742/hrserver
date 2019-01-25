@@ -3,6 +3,8 @@ package org.sang.config;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.recipes.cache.PathChildrenCache;
+import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.zookeeper.CreateMode;
 import org.sang.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +63,18 @@ public class WebListener implements ApplicationListener<ContextRefreshedEvent> {
         if (!Optional.ofNullable(curatorClient.checkExists().forPath(rootPath + "/" + applicationName)).isPresent()) {
             curatorClient.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath(rootPath + "/" + applicationName);//持久节点
         }
+
+        PathChildrenCache pathChildrenCache = new PathChildrenCache(curatorClient,rootPath + "/" + applicationName,true);
+        pathChildrenCache.start();
+        PathChildrenCacheListener listener = (curator, event)->{
+            System.out.println("事件类型:" + event.getType());
+            ZkComsumer.servermap = null;//清空缓存
+            Optional.ofNullable(event.getData()).ifPresent(r->{
+                System.out.println("节点数据:" + event.getData().getPath() + "=" + new String(event.getData().getData()));
+            });
+        };
+        pathChildrenCache.getListenable().addListener(listener);
+
         //创建子节点
         final String servicePath = rootPath + "/" + applicationName + "/" + applicationName;
 
