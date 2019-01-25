@@ -8,13 +8,19 @@
     <el-form-item prop="checkPass">
       <el-input type="password" v-model="loginForm.password" auto-complete="off" placeholder="密码"></el-input>
     </el-form-item>
+    <!--
     <el-checkbox class="login_remember" v-model="checked" label-position="left">记住密码</el-checkbox>
+    -->
+    <div id="captcha" style="width:310px;"></div>
+    <div id="msg">11222{{checkMsg}}</div>
     <el-form-item style="width: 100%">
       <el-button type="primary" @click.native.prevent="submitClick" style="width: 100%">登录</el-button>
     </el-form-item>
   </el-form>
 </template>
 <script>
+  import  '../lib/jigsaw.js';
+  import  '../lib/jigsaw.min.js';
   export default{
     data(){
       return {
@@ -23,6 +29,8 @@
           checkPass: [{required: true, message: '请输入密码', trigger: 'blur'}]
         },
         checked: true,
+        checkMsg:"",
+        checkResult:null,
         loginForm: {
           username: 'admin',
           password: '123'
@@ -32,6 +40,13 @@
     },
     methods: {
       submitClick: function () {
+        if(1 != this.checkResult) {
+          this.$message({
+            type: 'warn',
+            message: '拼图验证失败'
+          });
+          return;
+        }
         var _this = this;
         this.loading = true;
         this.postRequest('/login', {
@@ -46,7 +61,27 @@
             _this.$router.replace({path: path == '/' || path == undefined ? '/home' : path});
           }
         });
-      }
+      },
+      clearMsg(){
+        this.checkMsg = "";
+      },
+    },
+    mounted(){
+      jigsaw.init({
+        el: document.getElementById('captcha'),
+        onSuccess: function () {
+          this.checkMsg = '验证成功';
+          this.checkResult = 1;
+        },
+        onFail: function () {
+          this.checkMsg = '验证失败';
+          this.checkResult = 0;
+        },
+        onRefresh: function () {
+          this.clearMsg();
+          this.checkResult = 0;
+        }
+     });
     }
   }
 </script>
