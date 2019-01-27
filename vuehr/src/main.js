@@ -24,6 +24,8 @@ Vue.prototype.deleteRequest = deleteRequest;
 Vue.prototype.putRequest = putRequest;
 Vue.prototype.isNotNullORBlank = isNotNullORBlank;
 
+Vue.config.devtools = true;
+
 router.beforeEach((to, from, next)=> {
     if (to.name == 'Login') {
       next();

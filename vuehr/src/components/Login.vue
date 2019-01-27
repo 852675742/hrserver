@@ -11,16 +11,14 @@
     <!--
     <el-checkbox class="login_remember" v-model="checked" label-position="left">记住密码</el-checkbox>
     -->
-    <div id="captcha" style="width:310px;"></div>
-    <div id="msg">11222{{checkMsg}}</div>
+    <div ref="captcha" style="width:310px;"></div>
     <el-form-item style="width: 100%">
-      <el-button type="primary" @click.native.prevent="submitClick" style="width: 100%">登录</el-button>
+      <el-button type="primary" @click.native="submitClick" style="width: 100%">登录</el-button>
     </el-form-item>
   </el-form>
 </template>
 <script>
   import  '../lib/jigsaw.js';
-  import  '../lib/jigsaw.min.js';
   export default{
     data(){
       return {
@@ -29,8 +27,7 @@
           checkPass: [{required: true, message: '请输入密码', trigger: 'blur'}]
         },
         checked: true,
-        checkMsg:"",
-        checkResult:null,
+        verification : false,
         loginForm: {
           username: 'admin',
           password: '123'
@@ -40,7 +37,8 @@
     },
     methods: {
       submitClick: function () {
-        if(1 != this.checkResult) {
+        console.log("获取回调1:",this.verification);
+        if(true != this.verification) {
           this.$message({
             type: 'warn',
             message: '拼图验证失败'
@@ -62,27 +60,28 @@
           }
         });
       },
-      clearMsg(){
-        this.checkMsg = "";
-      },
     },
     mounted(){
       jigsaw.init({
-        el: document.getElementById('captcha'),
-        onSuccess: function () {
-          this.checkMsg = '验证成功';
-          this.checkResult = 1;
+        el:this.$refs.captcha,
+        onSuccess: function (val) {
+          console.log("拼图回调值",val);
+          this.verification = val;
+          console.log("拼图回调值1",this.verification);
         },
-        onFail: function () {
-          this.checkMsg = '验证失败';
-          this.checkResult = 0;
+        onFail: function (val) {
+          this.verification = val;
         },
-        onRefresh: function () {
-          this.clearMsg();
-          this.checkResult = 0;
+        onRefresh: function (val) {
+          this.verification = val;
         }
      });
-    }
+    },
+    watch:{
+      verification (val,oldVal) {
+        console.log("xxxyyzzz",val);
+      }
+    },
   }
 </script>
 <style>

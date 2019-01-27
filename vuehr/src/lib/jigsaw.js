@@ -23,6 +23,15 @@ function createImg (onload) {
   img.onload = onload
   img.onerror = () => {
     img.setSrc(getRandomImgSrc())
+    /*
+    let localImageSrc = getLocalImgSrc();
+    img.src=localImageSrc;
+    */
+  }
+
+  function getLocalImgSrc () {
+    let num = getRandomNumberByRange(1,20);
+    return '../assets/jigsaw/' + num + ".jpg";
   }
 
   img.setSrc = function (src) {
@@ -61,7 +70,7 @@ function removeClass (tag, className) {
 }
 
 function getRandomImgSrc () {
-  return '//picsum.photos/300/150/?image=' + getRandomNumberByRange(0, 1084)
+  return 'https://picsum.photos/300/150/?image=' + getRandomNumberByRange(0, 1084)
 }
 
 function draw (ctx, x, y, operation) {
@@ -116,9 +125,10 @@ class jigsaw {
     const slider = createElement('div', 'slider')
     const sliderIcon = createElement('span', 'sliderIcon')
     const text = createElement('span', 'sliderText')
+    text.className = 'sliderTextRight'
 
     block.className = 'block'
-    text.innerHTML = '向右滑动填充拼图'
+    text.innerHTML = '按住左边滑块拖动完成上方拼图'
 
     const el = this.el
     el.appendChild(canvas)
@@ -175,7 +185,7 @@ class jigsaw {
     this.el.onselectstart = () => false
     this.refreshIcon.onclick = () => {
       this.reset()
-      typeof this.onRefresh === 'function' && this.onRefresh()
+      typeof this.onRefresh === 'function' && this.onRefresh(false)
     }
 
     let originX, originY, trail = [], isMouseDown = false
@@ -213,7 +223,8 @@ class jigsaw {
       if (spliced) {
         if (verified) {
           addClass(this.sliderContainer, 'sliderContainer_success')
-          typeof this.onSuccess === 'function' && this.onSuccess()
+          this.text.innerHTML = '验证通过'
+          typeof this.onSuccess === 'function' && this.onSuccess(true)
         } else {
           addClass(this.sliderContainer, 'sliderContainer_fail')
           this.text.innerHTML = '再试一次'
@@ -221,7 +232,8 @@ class jigsaw {
         }
       } else {
         addClass(this.sliderContainer, 'sliderContainer_fail')
-        typeof this.onFail === 'function' && this.onFail()
+        this.text.innerHTML = '验证失败'
+        typeof this.onFail === 'function' && this.onFail(false)
         setTimeout(() => {
           this.reset()
         }, 1000)
@@ -249,6 +261,8 @@ class jigsaw {
 
   reset () {
     this.sliderContainer.className = 'sliderContainer'
+    var span = document.querySelector(".sliderTextRight");
+    span.innerHTML="按住左边滑块拖动完成上方拼图";
     this.slider.style.left = 0
     this.block.style.left = 0
     this.sliderMask.style.width = 0
