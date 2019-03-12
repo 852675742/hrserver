@@ -27,7 +27,7 @@
           checkPass: [{required: true, message: '请输入密码', trigger: 'blur'}]
         },
         checked: true,
-        verification : false,
+        verification : 0,
         loginForm: {
           username: 'admin',
           password: '123'
@@ -38,7 +38,7 @@
     methods: {
       submitClick: function () {
         console.log("获取回调1:",this.verification);
-        if(true != this.verification) {
+        if(1 != this.verification) {
           this.$message({
             type: 'warn',
             message: '拼图验证失败'
@@ -66,14 +66,14 @@
         el:this.$refs.captcha,
         onSuccess: function (val) {
           console.log("拼图回调值",val);
-          this.verification = val;
+          this.verification = 1;
           console.log("拼图回调值1",this.verification);
         },
         onFail: function (val) {
-          this.verification = val;
+          this.verification = 0;
         },
         onRefresh: function (val) {
-          this.verification = val;
+          this.verification = 0;
         }
      });
     },

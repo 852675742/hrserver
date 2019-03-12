@@ -33,8 +33,10 @@ public class EmpBasicController {
     PositionService positionService;
     @Autowired
     JobLevelService jobLevelService;
+    /*
     @Autowired
     ExecutorService executorService;
+    */
 
     @RequestMapping(value = "/basicdata", method = RequestMethod.GET)
     public Map<String, Object> getAllNations() {
@@ -62,7 +64,7 @@ public class EmpBasicController {
                     employee.setPosName(allPo.getName());
                 }
             }
-            executorService.execute(new EmailRunnable(employee));
+            //executorService.execute(new EmailRunnable(employee));
             return new RespBean("success", "添加成功!");
         }
         return new RespBean("error", "添加失败!");

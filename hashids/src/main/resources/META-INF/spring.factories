@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.miracle.autoconfigure.HashidsConfiguration,\
+com.miracle.autoconfigure.WebmvcConfig

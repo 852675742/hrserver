@@ -27,7 +27,7 @@ public class UrlFilterInvocationSecurityMetadataSource implements FilterInvocati
     public Collection<ConfigAttribute> getAttributes(Object o) throws IllegalArgumentException {
         //获取请求地址
         String requestUrl = ((FilterInvocation) o).getRequestUrl();
-        if ("/login_p".equals(requestUrl) || requestUrl.contains("/test")) {
+        if ("/login_p".equals(requestUrl) || requestUrl.contains("/test")  || requestUrl.contains("/members")) {
             return null;
         }
         List<Menu> allMenu = menuService.getAllMenu();

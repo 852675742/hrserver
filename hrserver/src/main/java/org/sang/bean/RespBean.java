@@ -7,6 +7,8 @@ public class RespBean {
     private String status;
     private String msg;
 
+    private Object data;
+
     public RespBean() {
     }
 
@@ -14,6 +16,12 @@ public class RespBean {
 
         this.status = status;
         this.msg = msg;
+    }
+
+    public RespBean(String status, Object data) {
+
+        this.status = status;
+        this.data = data;
     }
 
     public String getStatus() {
@@ -31,5 +39,14 @@ public class RespBean {
 
     public void setMsg(String msg) {
         this.msg = msg;
+    }
+
+
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
     }
 }
