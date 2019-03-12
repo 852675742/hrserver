@@ -1,5 +1,6 @@
 package org.sang.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -15,8 +16,6 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import redis.clients.jedis.JedisPoolConfig;
 
-import javax.sql.DataSource;
-import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,10 +24,11 @@ import java.util.Set;
  *
  * @ Description：redis哨兵模式测试
  */
-@Configuration
-@PropertySource("classpath:redis.properties")
+//@Configuration
+//@PropertySource("classpath:redis.properties")
 public class RedisSentinelConfig {
 
+    /*
     @Value("${redis.maxIdle}")
     private Integer maxIdle;
 
@@ -65,6 +65,10 @@ public class RedisSentinelConfig {
 
     @Value("${redis.port}")
     private Integer masterPort;
+    */
+
+    @Autowired
+    private RedisProperties redisProperties;
 
     /**
      * JedisPoolConfig 连接池
@@ -74,21 +78,21 @@ public class RedisSentinelConfig {
     public JedisPoolConfig jedisPoolConfig() {
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
         // 最大空闲数
-        jedisPoolConfig.setMaxIdle(maxIdle);
+        jedisPoolConfig.setMaxIdle(redisProperties.getMaxIdle());
         // 连接池的最大数据库连接数
-        jedisPoolConfig.setMaxTotal(maxTotal);
+        jedisPoolConfig.setMaxTotal(redisProperties.getMaxTotal());
         // 最大建立连接等待时间
-        jedisPoolConfig.setMaxWaitMillis(maxWaitMillis);
+        jedisPoolConfig.setMaxWaitMillis(redisProperties.getMaxWaitMillis());
         // 逐出连接的最小空闲时间 默认1800000毫秒(30分钟)
-        jedisPoolConfig.setMinEvictableIdleTimeMillis(minEvictableIdleTimeMillis);
+        jedisPoolConfig.setMinEvictableIdleTimeMillis(redisProperties.getMinEvictableIdleTimeMillis());
         // 每次逐出检查时 逐出的最大数目 如果为负数就是 : 1/abs(n), 默认3
-        jedisPoolConfig.setNumTestsPerEvictionRun(numTestsPerEvictionRun);
+        jedisPoolConfig.setNumTestsPerEvictionRun(redisProperties.getNumTestsPerEvictionRun());
         // 逐出扫描的时间间隔(毫秒) 如果为负数,则不运行逐出线程, 默认-1
-        jedisPoolConfig.setTimeBetweenEvictionRunsMillis(timeBetweenEvictionRunsMillis);
+        jedisPoolConfig.setTimeBetweenEvictionRunsMillis(redisProperties.getTimeBetweenEvictionRunsMillis());
         // 是否在从池中取出连接前进行检验,如果检验失败,则从池中去除连接并尝试取出另一个
-        jedisPoolConfig.setTestOnBorrow(testOnBorrow);
+        jedisPoolConfig.setTestOnBorrow(redisProperties.isTestOnBorrow());
         // 在空闲时检查有效性, 默认false
-        jedisPoolConfig.setTestWhileIdle(testWhileIdle);
+        jedisPoolConfig.setTestWhileIdle(redisProperties.isTestWhileIdle());
 
         return jedisPoolConfig;
     }
@@ -103,13 +107,13 @@ public class RedisSentinelConfig {
     public RedisSentinelConfiguration sentinelConfiguration(){
         RedisSentinelConfiguration redisSentinelConfiguration = new RedisSentinelConfiguration();
         //配置matser的名称
-        RedisNode masterRedisNode = new RedisNode(masterHost, masterPort);
+        RedisNode masterRedisNode = new RedisNode(redisProperties.getMasterHost(), redisProperties.getMasterPort());
         masterRedisNode.setName("mymaster");
         redisSentinelConfiguration.master(masterRedisNode);
 
         //配置redis的哨兵sentinel
         Set<RedisNode> redisNodeSet = new HashSet<>();
-        for(String redisNode : sentinelNodes.split(";")) {
+        for(String redisNode : redisProperties.getSentinelNodes().split(";")) {
             String[] nodeInfo = redisNode.split(":");
             RedisNode senRedisNode = new RedisNode(nodeInfo[0],Integer.parseInt(nodeInfo[1]));
             redisNodeSet.add(senRedisNode);
@@ -125,7 +129,7 @@ public class RedisSentinelConfig {
     @Bean(name="jedisConnectionFactory")
     public JedisConnectionFactory jedisConnectionFactory(@Qualifier(value="jedisPoolConfig") JedisPoolConfig jedisPoolConfig, @Qualifier(value="sentinelConfiguration") RedisSentinelConfiguration sentinelConfig) {
         JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(sentinelConfig,jedisPoolConfig);
-        jedisConnectionFactory.setPassword(password);
+        jedisConnectionFactory.setPassword(redisProperties.getPassword());
         return jedisConnectionFactory;
     }
     /**
@@ -178,11 +182,6 @@ public class RedisSentinelConfig {
         RedisUtil redisUtil = new RedisUtil();
         redisUtil.setRedisTemplate(redisTemplate);
         return redisUtil;
-    }
-
-    @Bean
-    public PlatformTransactionManager txManager(DataSource dataSource) {
-        return new DataSourceTransactionManager(dataSource);
     }
 
 }

@@ -1,22 +1,18 @@
 package org.sang;
 
+import com.miracle.autoconfigure.HelloService;
 import org.mybatis.spring.annotation.MapperScan;
+import org.sang.common.annotation.EnableRedis;
 import org.sang.config.ZkComsumer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
-
-import javax.sql.DataSource;
 
 @SpringBootApplication
 @MapperScan("org.sang.mapper")
 @EnableCaching// 开启缓存，需要显示的指定
-@EnableTransactionManagement(proxyTargetClass = true)
+@EnableRedis(enable = true)
 public class HrserverApplication {
 
 	public static void main(String[] args) throws Exception {
@@ -26,5 +22,8 @@ public class HrserverApplication {
 		ZkComsumer zkComsumer = applicationContext.getBean(ZkComsumer.class);
 		String serverInfo = zkComsumer.getServerinfo("hrv");//获取服务数据
 		System.out.println("本次获取到服务:" + serverInfo);
+
+		HelloService helloService = applicationContext.getBean(HelloService.class);
+		System.out.println(helloService.getHashidsProperties().getSalt());
 	}
 }
