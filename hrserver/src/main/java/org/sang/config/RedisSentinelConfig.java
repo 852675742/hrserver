@@ -15,6 +15,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.JedisSentinelPool;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -132,6 +133,39 @@ public class RedisSentinelConfig {
         jedisConnectionFactory.setPassword(redisProperties.getPassword());
         return jedisConnectionFactory;
     }
+
+    /**
+     *
+     * @author Fire Monkey
+     * @date 下午7:20
+     * @return redis.clients.jedis.JedisSentinelPool
+     * 生成JedisSentinelPool并且放入Spring容器
+     *
+     */
+    @Bean(value = "jedisSentinelPool")
+    public JedisSentinelPool jedisSentinelPool(@Qualifier(value = "jedisPoolConfig") JedisPoolConfig jedisPoolConfig){
+
+        Set<String>  nodeSet = new HashSet<>();
+        //获取到节点信息
+        String nodeString = redisProperties.getSentinelNodes();
+        //判断字符串是否为空
+        if(nodeString == null || "".equals(nodeString)){
+            throw new RuntimeException("RedisSentinelConfiguration initialize error nodeString is null");
+        }
+        String[] nodeArray = nodeString.split(";");
+        //判断是否为空
+        if(nodeArray == null || nodeArray.length == 0){
+            throw new RuntimeException("RedisSentinelConfiguration initialize error nodeArray is null");
+        }
+        //循环注入至Set中
+        for(String node : nodeArray){
+            nodeSet.add(node);
+        }
+        //创建连接池对象
+        JedisSentinelPool jedisPool = new JedisSentinelPool("mymaster" ,nodeSet ,jedisPoolConfig ,redisProperties.getTimeout(), redisProperties.getPassword());
+        return jedisPool;
+    }
+
     /**
      * 实例化 RedisTemplate 对象(带事物)
      *

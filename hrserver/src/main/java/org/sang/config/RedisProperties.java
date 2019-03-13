@@ -53,6 +53,9 @@ public class RedisProperties implements Serializable{
     @Value("${redis.port}")
     private Integer masterPort;
 
+    @Value("${redis.timeout}")
+    private Integer timeout;
+
     public Integer getMaxIdle() {
         return maxIdle;
     }
@@ -147,5 +150,14 @@ public class RedisProperties implements Serializable{
 
     public void setMasterPort(Integer masterPort) {
         this.masterPort = masterPort;
+    }
+
+
+    public Integer getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(Integer timeout) {
+        this.timeout = timeout;
     }
 }

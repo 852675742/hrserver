@@ -2,12 +2,14 @@ package org.sang.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
+import org.sang.common.annotation.RedisLimiter;
 import org.sang.config.RedissLockUtil;
 import org.sang.mq.MQConfig;
 import org.sang.mq.MQSender;
 import org.sang.service.DepartmentService;
 import org.sang.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -125,5 +127,11 @@ public class TestController implements TestApi{
     @Override
     public String testFegin(@RequestParam(value = "id") String id) {
         return id;
+    }
+
+    @RedisLimiter(keyPrefix = "testLimit", limit = "10")
+    @GetMapping(value="testLimit")
+    public String testLimit(){
+        return "123";
     }
 }
