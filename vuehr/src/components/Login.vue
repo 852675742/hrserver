@@ -38,6 +38,7 @@
     methods: {
       submitClick: function () {
         console.log("获取回调1:",this.verification);
+        /*
         if(1 != this.verification) {
           this.$message({
             type: 'warn',
@@ -45,6 +46,7 @@
           });
           return;
         }
+        */
         var _this = this;
         this.loading = true;
         this.postRequest('/login', {

@@ -35,22 +35,13 @@ public class RedisLimitTool {
             "   return 1\n" +
             "end";
 
-    private static final String LUA_LIMIT_SCRIPT2 = "local key = KEYS[1]\n" +
-            "local limit = ARGV[1]\n" +
-            "local limit2 = tonumber(ARGV[1])\n" +
-            "return limit2\n";
-
     private static final Long SUCCESS_CODE = 1L;
 
     public static Boolean limit(String keyPrefix, String limit){
         String key = keyPrefix + ":" + System.currentTimeMillis() / 1000;
         DefaultRedisScript<Long> redisScript1 = new DefaultRedisScript<>(LUA_LIMIT_SCRIPT, Long.class);
 
-        DefaultRedisScript<String> redisScript2 = new DefaultRedisScript<>(LUA_LIMIT_SCRIPT2, String.class);
-
-        //Long res =(Long) redisTemplate.execute(redisScript1, Collections.singletonList(key),Collections.singletonList(limit));
-
-        String res =(String) redisTemplate.execute(redisScript2, Collections.singletonList(key),String.valueOf(limit));
+        Long res =(Long) redisTemplate.execute(redisScript1, Collections.singletonList(key),Collections.singletonList(limit));
 
         System.out.println("xxyyzz:" + res);
         return SUCCESS_CODE.equals(res);

@@ -1,5 +1,6 @@
 package org.sang.controller;
 
+import com.google.common.util.concurrent.RateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.sang.common.annotation.RedisLimiter;
@@ -14,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 /**
  * Created by Rick on 2018/10/18.
@@ -134,4 +137,17 @@ public class TestController implements TestApi{
     public String testLimit(){
         return "123";
     }
+
+    @GetMapping(value="testRate")
+    public String testRate() {
+        System.out.println("start time:" + new Date());
+        final RateLimiter rateLimiter = RateLimiter.create(1.0);
+        IntStream.range(0,10).forEach(idx->{
+            double waitTime = rateLimiter.acquire(idx + 1);
+            System.out.println("cutTime=" + System.currentTimeMillis() + " call execute:" + idx + " waitTime:" + waitTime);
+        });
+        System.out.println("start time:" + new Date());
+        return "success";
+    }
+
 }
