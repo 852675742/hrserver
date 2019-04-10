@@ -1,10 +1,10 @@
-/*
 package org.sang.config;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -22,7 +22,7 @@ import redis.clients.jedis.JedisPoolConfig;
 @Configuration
 @EnableCaching
 @Slf4j
-@Order(1)
+@ConditionalOnProperty(name = "redis.single.enable",havingValue = "true")
 public class RedisConfig {
     @Bean
     public CacheManager cacheManager(RedisTemplate<?, ?> redisTemplate) {
@@ -48,7 +48,7 @@ public class RedisConfig {
         return factory;
     }
 
-    @Bean("redisTemplate")
+    @Bean("redisTemplateSingle")
     public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<Object, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
@@ -68,4 +68,4 @@ public class RedisConfig {
         return template;
     }
 
-}*/
+}

@@ -17,11 +17,11 @@ import java.util.List;
 @Component
 public class RedisLimitTool {
 
-    private static RedisTemplate redisTemplate;
+    private static RedisTemplate redisTemplateSingle;
 
     @Autowired
     public void init(RedisTemplate redisTemplate) {
-        this.redisTemplate = redisTemplate;
+        this.redisTemplateSingle = redisTemplate;
     }
 
     private static final String LUA_LIMIT_SCRIPT = "local key = KEYS[1]\n" +
@@ -35,13 +35,33 @@ public class RedisLimitTool {
             "   return 1\n" +
             "end";
 
+    private static final String LUA_LIMIT_SCRIPT2 = "--- 资源唯一标识\n" +
+            "local key = KEYS[1]\n" +
+            "--- 时间窗最大并发数\n" +
+            "local limit = tonumber(ARGV[1])\n" +
+            "redis.log(redis.LOG_DEBUG, ARGV[1])\n" +
+            "--- 时间窗\n" +
+            "local window = tonumber(ARGV[2])\n" +
+            "redis.log(redis.LOG_DEBUG, ARGV[2])\n" +
+            "--- 时间窗内当前并发数\n" +
+            "local current = tonumber(redis.call('get', key) or 0)\n" +
+            "if current + 1 > limit then\n" +
+            "return 0\n" +
+            "else\n" +
+            "redis.call(\"INCRBY\", key,1)\n" +
+            "if window > -1 then\n" +
+            "redis.call(\"expire\", key,window)\n" +
+            "end\n" +
+            "return 1\n" +
+            "end";
+
     private static final Long SUCCESS_CODE = 1L;
 
     public static Boolean limit(String keyPrefix, String limit){
-        String key = keyPrefix + ":" + System.currentTimeMillis() / 1000;
-        DefaultRedisScript<Long> redisScript1 = new DefaultRedisScript<>(LUA_LIMIT_SCRIPT, Long.class);
+        String key = keyPrefix + ":" + System.currentTimeMillis() / 1000;//同一时刻的并发
+        DefaultRedisScript<Long> redisScript2 = new DefaultRedisScript<>(LUA_LIMIT_SCRIPT2, Long.class);
 
-        Long res =(Long) redisTemplate.execute(redisScript1, Collections.singletonList(key),Collections.singletonList(limit));
+        Long res =(Long) redisTemplateSingle.execute(redisScript2, Collections.singletonList(key),limit,10);
 
         System.out.println("xxyyzz:" + res);
         return SUCCESS_CODE.equals(res);
