@@ -16,4 +16,5 @@ public @interface RedisLimiter {
  
     String keyPrefix() default "";
     String limit() default  "";
+    String timeOut() default  "1";
 }

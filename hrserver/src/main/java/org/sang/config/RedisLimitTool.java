@@ -3,10 +3,12 @@ package org.sang.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -57,13 +59,15 @@ public class RedisLimitTool {
 
     private static final Long SUCCESS_CODE = 1L;
 
-    public static Boolean limit(String keyPrefix, String limit){
-        String key = keyPrefix + ":" + System.currentTimeMillis() / 1000;//同一时刻的并发
+    public static Boolean limit(String keyPrefix, String limit, String timeOut){
+        //String key = keyPrefix + ":" + System.currentTimeMillis() / 1000;//同一时刻的并发
+        String key = keyPrefix;
         DefaultRedisScript<Long> redisScript2 = new DefaultRedisScript<>(LUA_LIMIT_SCRIPT2, Long.class);
 
-        Long res =(Long) redisTemplateSingle.execute(redisScript2, Collections.singletonList(key),limit,10);
+        //参数必须加序列化，否则会报错;返回值根据实际情况加序列化
+        Long res =(Long) redisTemplateSingle.execute(redisScript2, new StringRedisSerializer(),null , Collections.singletonList(key),limit,timeOut);
 
-        System.out.println("xxyyzz:" + res);
+        System.out.println(new Date() + ":" + res);
         return SUCCESS_CODE.equals(res);
     }
 

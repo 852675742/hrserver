@@ -19,7 +19,7 @@ public class RateLimitAop {
 
     @Around("execution(* org.sang.controller..*(..)) && @annotation(redisLimiter)")
     public Object redisLimiter(ProceedingJoinPoint proceedingJoinPoint, RedisLimiter redisLimiter) throws Throwable {
-            if (RedisLimitTool.limit(redisLimiter.keyPrefix(), redisLimiter.limit())){
+            if (RedisLimitTool.limit(redisLimiter.keyPrefix(), redisLimiter.limit(), redisLimiter.timeOut())){
                 return proceedingJoinPoint.proceed();
             }else {
                 log.error("限流：" + redisLimiter.keyPrefix());

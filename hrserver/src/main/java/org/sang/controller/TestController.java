@@ -132,7 +132,7 @@ public class TestController implements TestApi{
         return id;
     }
 
-    @RedisLimiter(keyPrefix = "testLimit", limit = "10")
+    @RedisLimiter(keyPrefix = "testLimit", limit = "5")
     @GetMapping(value="testLimit")
     public String testLimit(){
         return "123";
